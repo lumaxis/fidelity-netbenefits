@@ -9,37 +9,37 @@ CONSTANTS = {
   overview = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PositionSummary?ACCOUNT="
 }
 
-local g_cookies
+g_cookies = ""
 
 function SupportsBank (protocol, bankCode)
-  bankSupported = (protocol == ProtocolWebBanking) and (bankCode == services[1])
+  local bankSupported = (protocol == ProtocolWebBanking) and (bankCode == services[1])
   return bankSupported
 end
 
 function InitializeSession (protocol, bankCode, username, username2, password, username3)
-  connection = Connection()
-  html = HTML(connection:get(url))
+  local connection = Connection()
+  local html = HTML(connection:get(url))
 
-  url, postContent, postContentType = loginPostRequest(username, password)
+  local url, postContent, postContentType = loginPostRequest(username, password)
   connection:request("POST", url, postContent, postContentType)
   g_cookies = connection:getCookies()
 end
 
 function ListAccounts (knownAccounts)
-  connection = Connection()
+  local connection = Connection()
 
-  html = HTML(connection:request("GET", CONSTANTS.homepage, nil, nil, {["Cookie"] = g_cookies} ))
+  local html = HTML(connection:request("GET", CONSTANTS.homepage, nil, nil, {["Cookie"] = g_cookies} ))
 
+  -- Account Details
   local accoutName = html:xpath('//*[@id="tile3"]/h2'):text()
-  local number = html:xpath('//*[@id="tile3"]/div[2]'):text()
-
+  
   local stockPlanAccountLink = html:xpath('//*[@id="desktop-stop-propogation"]'):attr("href")
-  print(stockPlanAccountLink)
-  local subAccount = stockPlanAccountLink:match(".+ACCOUNT=(%w+)")
-  print(subAccount)
+  local number = stockPlanAccountLink:match(".+ACCOUNT=(%w+)")
+
+  local subAccount = html:xpath('//*[@id="tile3"]/div[2]'):text():match(".*(%a%d+)$")
 
   local account = {
-    name = accoutName,
+    name = titlecase(accoutName),
     accountNumber = number,
     subAccount = subAccount,
     portfolio = true,
@@ -50,27 +50,12 @@ function ListAccounts (knownAccounts)
 end
 
 function RefreshAccount (account, since)
-  connection = Connection()
-  html = HTML(connection:request("GET", CONSTANTS.overview .. account.subAccount, nil, nil, {["Cookie"] = g_cookies} ))
+  local connection = Connection()
+  local html = HTML(connection:request("GET", CONSTANTS.overview .. account.accountNumber, nil, nil, {["Cookie"] = g_cookies} ))
 
-  securities = html:xpath('//[@class="fund-category"]')
-  securities:each(function (index, element)
-    print(element:xpath('//a[@firstQuoteLink="symbol-1"]'):text())
-  end)
+  local jsonString = html:xpath('/html/head/script[1]'):text()
 
-  local security = {
-    bookingDate = 1325764800,
-    purpose = "Hello World!",
-    amount = 42.00
-  }
-
-  balanceString = html:xpath('/html/head/script[1]'):attr("type") 
-
-  print(balanceString)
-  balance = formatValueString(balanceString)
-  print(balance)
-
-  return {balance=balance, securities={security}}
+  return {balance=extractBalance(jsonString), securities=extractSecurities(jsonString)}
 end
 
 function EndSession ()
@@ -78,18 +63,73 @@ function EndSession ()
   html = HTML(connection:get(CONSTANTS.logout))
 end
 
-function loginPostRequest (username, password)
-  defaultDevicePrint = "version%3D1%26pm_fpua%3Dmozilla%2F5.0+%28macintosh%3B+intel+mac+os+x+10_11_6%29+applewebkit%2F537.36+%28khtml%2C+like+gecko%29+chrome%2F53.0.2785.80+safari%2F537.36%7C5.0+%28Macintosh%3B+Intel+Mac+OS+X+10_11_6%29+AppleWebKit%2F537.36+%28KHTML%2C+like+Gecko%29+Chrome%2F53.0.2785.80+Safari%2F537.36%7CMacIntel%7Cen-US%26pm_fpsc%3D24%7C1440%7C900%7C900%26pm_fpsw%3D%26pm_fptz%3D2%26pm_fpln%3Dlang%3Den-US%7Csyslang%3D%7Cuserlang%3D%26pm_fpjv%3D0%26pm_fpco%3D1" 
 
-  url = CONSTANTS.login
-  devicePrint = defaultDevicePrint
-  content = "ssn=" .. username .. "&userid=" .. username .. "&SavedIdInd=N&DEVICE_PRINT=" .. devicePrint .. "&ssnt=*********&pin=" .. password .. "&login-btn=Log+In"
-  contentType = "application/x-www-form-urlencoded; charset=UTF-8"
+function loginPostRequest (username, password)
+  local defaultDevicePrint = "version%3D1%26pm_fpua%3Dmozilla%2F5.0+%28macintosh%3B+intel+mac+os+x+10_11_6%29+applewebkit%2F537.36+%28khtml%2C+like+gecko%29+chrome%2F53.0.2785.80+safari%2F537.36%7C5.0+%28Macintosh%3B+Intel+Mac+OS+X+10_11_6%29+AppleWebKit%2F537.36+%28KHTML%2C+like+Gecko%29+Chrome%2F53.0.2785.80+Safari%2F537.36%7CMacIntel%7Cen-US%26pm_fpsc%3D24%7C1440%7C900%7C900%26pm_fpsw%3D%26pm_fptz%3D2%26pm_fpln%3Dlang%3Den-US%7Csyslang%3D%7Cuserlang%3D%26pm_fpjv%3D0%26pm_fpco%3D1" 
+
+  local url = CONSTANTS.login
+  local devicePrint = defaultDevicePrint
+  local content = "ssn=" .. username .. "&userid=" .. username .. "&SavedIdInd=N&DEVICE_PRINT=" .. devicePrint .. "&ssnt=*********&pin=" .. password .. "&login-btn=Log+In"
+  local contentType = "application/x-www-form-urlencoded; charset=UTF-8"
   return url, content, contentType
 end
 
-function formatValueString(string)
-  formatString = "%d*%p-%d+,%d+"
+function extractBalance (jsonString) 
+  local balance = jsonString:match('.*"fullNetWorthAltCurrency"%s*:%s*"(.-)".*')
+  return formatValueString(balance)
+end
+
+function extractSecurities (jsonString)
+  local currency = jsonString:match('"altCurrencyCode":"(%a+)"')
+  local exchangeRate = jsonString:match('"altCurrencyValue":"(.-)"')
+
+  local securityJsonsIterator = jsonString:gmatch('.-{("secDesc".-"unrealizedGainLoss".-)}.-')
+
+  -- Iterate over all found string matches and build securites from it
+  local securities = {}
+  for securityJson in securityJsonsIterator do
+    local security = {}
+    security.exchangeRate = exchangeRate
+
+    security.name = titlecase(securityJson:match('"secDesc":"(.-)"'))
+    security.quantity = securityJson:match('"quantity":"(.-)"')
+    security.amount = formatValueString(securityJson:match('"closingMktValueAltCurr":"(.-)"'))
+    security.originalCurrencyAmmount = securityJson:match('"closingMktValue":"(.-)"')
+    security.price = formatValueString(securityJson:match('"closingPriceAltCurrency":"(.-)"'))
+
+    totalCostBasisAltCurr = securityJson:match('"totalCostBasisAltCurr":"(.-)"')
+    if (totalCostBasisAltCurr ~= "0.00") then
+      security.purchasePrice = formatValueString(totalCostBasisAltCurr) / security.quantity
+    end
+
+    table.insert(securities, security)
+  end
+
+  return securities
+end
+
+-- Format "numbers" in the form of "€ 1,337.42 EUR" as 1337.42 
+function formatValueString (string)
+  local formatString = "%d*%p-%d+,%d+"
   
   return string:match(formatString):gsub("%.", ""):gsub(",", ".")
+end
+
+-- Helper function to format a string in Title Case
+function titlecase(str)
+  local buf = {}
+  local inWord = false
+  for i = 1, #str do
+    local c = string.sub(str, i, i)
+    if inWord then
+        table.insert(buf, string.lower(c))
+      if string.find(c, '%s') then
+        inWord = false
+      end
+    else
+      table.insert(buf, string.upper(c))
+      inWord = true
+    end
+  end
+  return table.concat(buf)
 end
