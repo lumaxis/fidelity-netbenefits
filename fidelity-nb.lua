@@ -5,7 +5,8 @@ WebBanking{version     = 0.01,
 CONSTANTS = {
   homepage = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary",
   login = "https://login.fidelity.com/ftgw/Fas/Fidelity/IspCust/Login/Response?AuthRedUrl=https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary",
-  logout = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary/Catalina/LongBeach?Command=LOGOUT&amp;Realm=mybenefitsww"
+  logout = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary/Catalina/LongBeach?Command=LOGOUT&amp;Realm=mybenefitsww",
+  overview = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PositionSummary?ACCOUNT="
 }
 
 local g_cookies
@@ -29,32 +30,47 @@ function ListAccounts (knownAccounts)
 
   html = HTML(connection:request("GET", CONSTANTS.homepage, nil, nil, {["Cookie"] = g_cookies} ))
 
-  accoutName = html:xpath('//*[@id="tile3"]/h2'):text()
-  number = html:xpath('//*[@id="tile3"]/div[2]'):text()
+  local accoutName = html:xpath('//*[@id="tile3"]/h2'):text()
+  local number = html:xpath('//*[@id="tile3"]/div[2]'):text()
+
+  local stockPlanAccountLink = html:xpath('//*[@id="desktop-stop-propogation"]'):attr("href")
+  print(stockPlanAccountLink)
+  local subAccount = stockPlanAccountLink:match(".+ACCOUNT=(%w+)")
+  print(subAccount)
 
   local account = {
     name = accoutName,
     accountNumber = number,
-    portfolio = false,
+    subAccount = subAccount,
+    portfolio = true,
     currency = "EUR",
-    type = AccountTypeUnknown
+    type = AccountTypePortfolio
   }
   return {account}
 end
 
 function RefreshAccount (account, since)
   connection = Connection()
-  html = HTML(connection:request("GET", CONSTANTS.homepage, nil, nil, {["Cookie"] = g_cookies} ))
+  html = HTML(connection:request("GET", CONSTANTS.overview .. account.subAccount, nil, nil, {["Cookie"] = g_cookies} ))
 
-  local transaction = {
+  securities = html:xpath('//[@class="fund-category"]')
+  securities:each(function (index, element)
+    print(element:xpath('//a[@firstQuoteLink="symbol-1"]'):text())
+  end)
+
+  local security = {
     bookingDate = 1325764800,
     purpose = "Hello World!",
     amount = 42.00
   }
-  balanceString = html:xpath('//*[@id="value-span"]'):text()
+
+  balanceString = html:xpath('/html/head/script[1]'):attr("type") 
+
+  print(balanceString)
   balance = formatValueString(balanceString)
   print(balance)
-  return {balance=balance, transactions={transaction}}
+
+  return {balance=balance, securities={security}}
 end
 
 function EndSession ()
