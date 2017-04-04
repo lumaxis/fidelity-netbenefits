@@ -59,8 +59,9 @@ function RefreshAccount (account, since)
 end
 
 function EndSession ()
-  connection = Connection()
-  html = HTML(connection:get(CONSTANTS.logout))
+  local connection = Connection()
+  local html = HTML(connection:get(CONSTANTS.logout))
+  g_cookies = ""
 end
 
 
