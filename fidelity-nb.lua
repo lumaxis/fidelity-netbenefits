@@ -77,7 +77,7 @@ end
 
 function extractBalance (jsonString) 
   local balance = jsonString:match('.*"fullNetWorthAltCurrency"%s*:%s*"(.-)".*')
-  return formatValueString(balance)
+  return formatEuropeanCurrencyValueAsFloat(balance)
 end
 
 function extractSecurities (jsonString)
@@ -94,13 +94,13 @@ function extractSecurities (jsonString)
 
     security.name = titlecase(securityJson:match('"secDesc":"(.-)"'))
     security.quantity = securityJson:match('"quantity":"(.-)"')
-    security.amount = formatValueString(securityJson:match('"closingMktValueAltCurr":"(.-)"'))
+    security.amount = formatEuropeanCurrencyValueAsFloat(securityJson:match('"closingMktValueAltCurr":"(.-)"'))
     security.originalCurrencyAmmount = securityJson:match('"closingMktValue":"(.-)"')
-    security.price = formatValueString(securityJson:match('"closingPriceAltCurrency":"(.-)"'))
+    security.price = formatEuropeanCurrencyValueAsFloat(securityJson:match('"closingPriceAltCurrency":"(.-)"'))
 
     totalCostBasisAltCurr = securityJson:match('"totalCostBasisAltCurr":"(.-)"')
     if (totalCostBasisAltCurr ~= "0.00") then
-      security.purchasePrice = formatValueString(totalCostBasisAltCurr) / security.quantity
+      security.purchasePrice = formatEuropeanCurrencyValueAsFloat(totalCostBasisAltCurr) / security.quantity
     end
 
     table.insert(securities, security)
@@ -109,9 +109,9 @@ function extractSecurities (jsonString)
   return securities
 end
 
--- Format "numbers" in the form of "€ 1,337.42 EUR" as 1337.42 
-function formatValueString (string)
-  local formatString = "%d*%p-%d+,%d+"
+-- Format "numbers" in the form of "€ 1.337,42 EUR" as 1337.42 
+function formatEuropeanCurrencyValueAsFloat (string)
+  local formatString = "%d*%.*%d+,%d+"
   
   return string:match(formatString):gsub("%.", ""):gsub(",", ".")
 end
