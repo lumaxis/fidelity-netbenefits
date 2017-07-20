@@ -93,7 +93,7 @@ function extractSecurities (jsonString)
     security.exchangeRate = exchangeRate
 
     security.name = titlecase(securityJson:match('"secDesc":"(.-)"'))
-    security.quantity = securityJson:match('"quantity":"(.-)"')
+    security.quantity = removeCommaThousandsDelimiter(securityJson:match('"quantity":"(.-)"'))
     security.amount = formatEuropeanCurrencyValueAsFloat(securityJson:match('"closingMktValueAltCurr":"(.-)"'))
     security.originalCurrencyAmmount = securityJson:match('"closingMktValue":"(.-)"')
     security.price = formatEuropeanCurrencyValueAsFloat(securityJson:match('"closingPriceAltCurrency":"(.-)"'))
@@ -114,6 +114,13 @@ function formatEuropeanCurrencyValueAsFloat (string)
   local formatString = "%d*%.*%d+,%d+"
   
   return string:match(formatString):gsub("%.", ""):gsub(",", ".")
+end
+
+-- Format "numbers" in the form of "1,337.42" as 1337.42 
+function removeCommaThousandsDelimiter (string)
+  local formatString = "%d*,*%d+%.%d+"
+  
+  return string:match(formatString):gsub(",", "")
 end
 
 -- Helper function to format a string in Title Case
