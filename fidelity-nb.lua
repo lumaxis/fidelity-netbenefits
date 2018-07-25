@@ -113,7 +113,15 @@ end
 function formatEuropeanCurrencyValueAsFloat (string)
   local formatString = "%d*%.*%d+,%d+"
   
-  return string:match(formatString):gsub("%.", ""):gsub(",", ".")
+  -- Uncomment to debug formatting
+  -- print (string.format("Formatting currency string %s as float", string))
+
+  local formattedString = string:match(formatString):gsub("%.", ""):gsub(",", ".")
+
+  -- Uncomment to debug formatting
+  -- print (string.format("Result: %s", formattedString))
+
+  return formattedString
 end
 
 -- Format "numbers" in the form of "1,337.42" as 1337.42 
