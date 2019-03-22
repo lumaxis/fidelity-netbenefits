@@ -66,7 +66,7 @@ end
 
 
 function loginPostRequest (username, password)
-  local defaultDevicePrint = "version%3D1%26pm_fpua%3Dmozilla%2F5.0+%28macintosh%3B+intel+mac+os+x+10_11_6%29+applewebkit%2F537.36+%28khtml%2C+like+gecko%29+chrome%2F53.0.2785.80+safari%2F537.36%7C5.0+%28Macintosh%3B+Intel+Mac+OS+X+10_11_6%29+AppleWebKit%2F537.36+%28KHTML%2C+like+Gecko%29+Chrome%2F53.0.2785.80+Safari%2F537.36%7CMacIntel%7Cen-US%26pm_fpsc%3D24%7C1440%7C900%7C900%26pm_fpsw%3D%26pm_fptz%3D2%26pm_fpln%3Dlang%3Den-US%7Csyslang%3D%7Cuserlang%3D%26pm_fpjv%3D0%26pm_fpco%3D1" 
+  local defaultDevicePrint = "version%3D1%26pm_fpua%3Dmozilla%2F5.0+%28macintosh%3B+intel+mac+os+x+10_11_6%29+applewebkit%2F537.36+%28khtml%2C+like+gecko%29+chrome%2F53.0.2785.80+safari%2F537.36%7C5.0+%28Macintosh%3B+Intel+Mac+OS+X+10_11_6%29+AppleWebKit%2F537.36+%28KHTML%2C+like+Gecko%29+Chrome%2F53.0.2785.80+Safari%2F537.36%7CMacIntel%7Cen-US%26pm_fpsc%3D24%7C1440%7C900%7C900%26pm_fpsw%3D%26pm_fptz%3D2%26pm_fpln%3Dlang%3Den-US%7Csyslang%3D%7Cuserlang%3D%26pm_fpjv%3D0%26pm_fpco%3D1"
 
   local url = CONSTANTS.login
   local devicePrint = defaultDevicePrint
@@ -75,7 +75,7 @@ function loginPostRequest (username, password)
   return url, content, contentType
 end
 
-function extractBalance (jsonString) 
+function extractBalance (jsonString)
   local balance = jsonString:match('.*"fullNetWorthAltCurrency"%s*:%s*"(.-)".*')
   return formatEuropeanCurrencyValueAsFloat(balance)
 end
@@ -109,10 +109,10 @@ function extractSecurities (jsonString)
   return securities
 end
 
--- Format "numbers" in the form of "€ 1.337,42 EUR" as 1337.42 
+-- Format "numbers" in the form of "€ 1.337,42 EUR" as 1337.42
 function formatEuropeanCurrencyValueAsFloat (string)
   local formatString = "%d*%.*%d+,%d+"
-  
+
   -- Uncomment to debug formatting
   -- print (string.format("Formatting currency string %s as float", string))
 
@@ -124,10 +124,10 @@ function formatEuropeanCurrencyValueAsFloat (string)
   return formattedString
 end
 
--- Format "numbers" in the form of "1,337.42" as 1337.42 
+-- Format "numbers" in the form of "1,337.42" as 1337.42
 function removeCommaThousandsDelimiter (string)
   local formatString = "%d*,*%d+%.%d+"
-  
+
   return string:match(formatString):gsub(",", "")
 end
 
