@@ -33,8 +33,8 @@ function ListAccounts (knownAccounts)
   -- Account Details
   local accoutName = html:xpath('//*[@id="tile3"]/h2'):text()
   
-  local stockPlanAccountLink = html:xpath('//*[@id="desktop-stop-propogation"]'):attr("href")
-  local number = stockPlanAccountLink:match(".+ACCOUNT=(%w+)")
+  local stockPlanAccountLink = html:xpath('//*[@id="espp-tables"]/div[contains(@class, \'full-transaction-history\')]/a'):attr("href")
+  local number = stockPlanAccountLink:match(".+ACCOUNT=(%w+)_MSFT.*")
 
   local subAccount = html:xpath('//*[@id="tile3"]/div[2]'):text():match(".*(%a%d+)$")
 
