@@ -1,4 +1,4 @@
-# fidelity-nb
+# fidelity-netbenefits
 A MoneyMoney extension for Fidelity NetBenefits stock plan accounts
 
 ## Prerequesites
