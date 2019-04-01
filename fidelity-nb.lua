@@ -1,6 +1,9 @@
-WebBanking{version     = 0.02,
-           url         = "https://nb.fidelity.com/public/nb/worldwide/home",
-           services    = {"Fidelity NetBenefits"}}
+WebBanking{
+  version     = 0.02,
+  url         = "https://nb.fidelity.com/public/nb/worldwide/home",
+  services    = {"Fidelity NetBenefits"},
+  description = "Fetch securitites from the Fidelity NetBenefits website and display their current value"
+}
 
 CONSTANTS = {
   homepage = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary",
