@@ -1,4 +1,4 @@
-WebBanking{version     = 0.01,
+WebBanking{version     = 0.02,
            url         = "https://nb.fidelity.com/public/nb/worldwide/home",
            services    = {"Fidelity NetBenefits"}}
 
