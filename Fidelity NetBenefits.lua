@@ -2,7 +2,7 @@ WebBanking{
   version     = 0.02,
   url         = "https://nb.fidelity.com/public/nb/worldwide/home",
   services    = {"Fidelity NetBenefits"},
-  description = "Fetch securitites from the Fidelity NetBenefits website and display their current value"
+  description = "Get securities and their current value from the Fidelity NetBenefits website"
 }
 
 CONSTANTS = {
