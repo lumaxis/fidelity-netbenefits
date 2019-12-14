@@ -1,13 +1,13 @@
 WebBanking{
   version     = 0.02,
-  url         = "https://nb.fidelity.com/public/nb/worldwide/home",
+  url         = "https://nb.fidelity.com/public/nb/worldwide/home?AuthRedUrl=https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary",
   services    = {"Fidelity NetBenefits"},
   description = "Get securities and their current value from the Fidelity NetBenefits website"
 }
 
 CONSTANTS = {
   homepage = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary",
-  login = "https://login.fidelity.com/ftgw/Fas/Fidelity/IspCust/Login/Response?AuthRedUrl=https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary",
+  login = "https://login.fidelity.com/ftgw/Fas/Fidelity/PWI/Login/Response/dj.chf.ra/",
   logout = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary/Catalina/LongBeach?Command=LOGOUT&amp;Realm=mybenefitsww",
   overview = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PositionSummary?ACCOUNT="
 }
@@ -23,8 +23,8 @@ function InitializeSession (protocol, bankCode, username, username2, password, u
   local connection = Connection()
   local html = HTML(connection:get(url))
 
-  local url, postContent, postContentType = loginPostRequest(username, password)
-  connection:request("POST", url, postContent, postContentType)
+  local url, postContent, postContentType, headers = loginPostRequest(username, password)
+  connection:request("POST", url, postContent, postContentType, headers)
   g_cookies = connection:getCookies()
 end
 
@@ -69,13 +69,15 @@ end
 
 
 function loginPostRequest (username, password)
-  local defaultDevicePrint = "version%3D1%26pm_fpua%3Dmozilla%2F5.0+%28macintosh%3B+intel+mac+os+x+10_11_6%29+applewebkit%2F537.36+%28khtml%2C+like+gecko%29+chrome%2F53.0.2785.80+safari%2F537.36%7C5.0+%28Macintosh%3B+Intel+Mac+OS+X+10_11_6%29+AppleWebKit%2F537.36+%28KHTML%2C+like+Gecko%29+Chrome%2F53.0.2785.80+Safari%2F537.36%7CMacIntel%7Cen-US%26pm_fpsc%3D24%7C1440%7C900%7C900%26pm_fpsw%3D%26pm_fptz%3D2%26pm_fpln%3Dlang%3Den-US%7Csyslang%3D%7Cuserlang%3D%26pm_fpjv%3D0%26pm_fpco%3D1"
-
   local url = CONSTANTS.login
-  local devicePrint = defaultDevicePrint
-  local content = "ssn=" .. username .. "&userid=" .. username .. "&SavedIdInd=N&DEVICE_PRINT=" .. devicePrint .. "&ssnt=*********&pin=" .. password .. "&login-btn=Log+In"
+  local content = "username=" .. username .. "&password=" .. password .. "&SavedIdInd=N"
   local contentType = "application/x-www-form-urlencoded; charset=UTF-8"
-  return url, content, contentType
+  local headers = {
+    Cookie = "JSESSIONID=04448874604040A6297E82396E18F89F; "..
+    "_abck=399D7CCACB3AFE5275E8BC8F18298FB7~0~YAAQX4QUAntswdtuAQAAEy5A/wNbZPHuWej/SZo5f+mtVMe3qJD7z/gxo/airATTTRwfQnOLSUIR3I9BdR/bEfQJ/nfXH1/DmUGH2d2tRQAijzAW6949wAP3Tw/QzNUOFtTSfjlkihRWVNdsxCiLWnRErbVmLInd6qvJ5i66J5D2X5G+B86V0Lgt1Nkrs3TzfbD1aPVG7XkcXyHIbR78ytQSs0HA/Etjsc+Tv+zL88gSj0tIqh2sCXqz2gWT8RNqGYJI4VtCM2xU5qS+zNUfhxFIt3xcUehMMwcLxnyLcUNlAWO55d4uVsE0VtywNYftrcZuBFUjpJ0E~-1~-1~-1; "
+  }
+
+  return url, content, contentType, headers
 end
 
 function extractBalance (jsonString)
