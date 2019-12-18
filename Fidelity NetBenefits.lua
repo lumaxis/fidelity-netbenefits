@@ -23,7 +23,7 @@ function InitializeSession (protocol, bankCode, username, username2, password, u
   local connection = Connection()
   local html = HTML(connection:get(url))
 
-  local url, postContent, postContentType, headers = loginPostRequest(username, password)
+  local url, postContent, postContentType, headers = loginPostRequest(username, password, connection:getCookies())
   connection:request("POST", url, postContent, postContentType, headers)
   g_cookies = connection:getCookies()
 end
@@ -68,13 +68,19 @@ function EndSession ()
 end
 
 
-function loginPostRequest (username, password)
+function loginPostRequest (username, password, cookies)
   local url = CONSTANTS.login
   local content = "username=" .. username .. "&password=" .. password .. "&SavedIdInd=N"
   local contentType = "application/x-www-form-urlencoded; charset=UTF-8"
+
+  -- Extracting the _abck
+  --local abckCookie = cookies:match('(_abck=.*);?')
+  --local generatedCookie = "JSESSIONID=" .. randomJsessionId() .. "; " .. abckCookie .. "; "
+
+  local abckCookie = "_abck=AE221C6450B51346A295098A0AB85D16~0~YAAQsgoWAq6B0vtuAQAAxHY3BgONSS+2jGke2RQ8C8fnWj5jOpCc4ZiWmIPTt0yAWTIdKFmmP/8SE+VD0rslSs6AHsuD90DlR3BWF8dqF7Y9fQftomqm21Dgqv1vI2WUYRXHVUb4yFVWCDNaFZn7qIwq9rJIxFk4ishGyivzIX1xXJVYMMWhSZ5SktvubQPuiU2U5OJT15H8gyqhrkiLHDNDRX+/ihCbEZGPy2nwERucaI5xvAIZIAbiMhsvBjAjhyjfAEa9UdYrVH31FmhbqTHUk4EB9FmYFBMw6l7r0Ga+dzXJHESK1SQLC2+x5bK6dqZ4cWAz/mCO~-1~-1~-1; "
+  local cookie = "JSESSIONID=" .. randomJsessionId() .. "; " .. abckCookie
   local headers = {
-    Cookie = "JSESSIONID=04448874604040A6297E82396E18F89F; "..
-    "_abck=399D7CCACB3AFE5275E8BC8F18298FB7~0~YAAQX4QUAntswdtuAQAAEy5A/wNbZPHuWej/SZo5f+mtVMe3qJD7z/gxo/airATTTRwfQnOLSUIR3I9BdR/bEfQJ/nfXH1/DmUGH2d2tRQAijzAW6949wAP3Tw/QzNUOFtTSfjlkihRWVNdsxCiLWnRErbVmLInd6qvJ5i66J5D2X5G+B86V0Lgt1Nkrs3TzfbD1aPVG7XkcXyHIbR78ytQSs0HA/Etjsc+Tv+zL88gSj0tIqh2sCXqz2gWT8RNqGYJI4VtCM2xU5qS+zNUfhxFIt3xcUehMMwcLxnyLcUNlAWO55d4uVsE0VtywNYftrcZuBFUjpJ0E~-1~-1~-1; "
+    Cookie = cookie
   }
 
   return url, content, contentType, headers
@@ -137,7 +143,7 @@ function removeCommaThousandsDelimiter (string)
 end
 
 -- Helper function to format a string in Title Case
-function titlecase(str)
+function titlecase (str)
   local buf = {}
   local inWord = false
   for i = 1, #str do
@@ -153,4 +159,23 @@ function titlecase(str)
     end
   end
   return table.concat(buf)
+end
+
+function randomJsessionId ()
+  local chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  local length = 32
+  local randomString = ''
+
+  math.randomseed(os.time())
+
+  charTable = {}
+  for c in chars:gmatch"." do
+      table.insert(charTable, c)
+  end
+
+  for i = 1, length do
+      randomString = randomString .. charTable[math.random(1, #charTable)]
+  end
+
+  return randomString
 end
