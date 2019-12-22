@@ -1,13 +1,13 @@
 WebBanking{
-  version     = 0.02,
-  url         = "https://nb.fidelity.com/public/nb/worldwide/home",
+  version     = 0.03,
+  url         = "https://nb.fidelity.com/public/nb/worldwide/home?AuthRedUrl=https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary",
   services    = {"Fidelity NetBenefits"},
   description = "Get securities and their current value from the Fidelity NetBenefits website"
 }
 
 CONSTANTS = {
   homepage = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary",
-  login = "https://login.fidelity.com/ftgw/Fas/Fidelity/IspCust/Login/Response?AuthRedUrl=https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary",
+  login = "https://login.fidelity.com/ftgw/Fas/Fidelity/PWI/Login/Response/dj.chf.ra/",
   logout = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary/Catalina/LongBeach?Command=LOGOUT&amp;Realm=mybenefitsww",
   overview = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PositionSummary?ACCOUNT="
 }
@@ -23,8 +23,8 @@ function InitializeSession (protocol, bankCode, username, username2, password, u
   local connection = Connection()
   local html = HTML(connection:get(url))
 
-  local url, postContent, postContentType = loginPostRequest(username, password)
-  connection:request("POST", url, postContent, postContentType)
+  local url, postContent, postContentType, headers = loginPostRequest(username, password, connection:getCookies())
+  connection:request("POST", url, postContent, postContentType, headers)
   g_cookies = connection:getCookies()
 end
 
@@ -68,14 +68,22 @@ function EndSession ()
 end
 
 
-function loginPostRequest (username, password)
-  local defaultDevicePrint = "version%3D1%26pm_fpua%3Dmozilla%2F5.0+%28macintosh%3B+intel+mac+os+x+10_11_6%29+applewebkit%2F537.36+%28khtml%2C+like+gecko%29+chrome%2F53.0.2785.80+safari%2F537.36%7C5.0+%28Macintosh%3B+Intel+Mac+OS+X+10_11_6%29+AppleWebKit%2F537.36+%28KHTML%2C+like+Gecko%29+Chrome%2F53.0.2785.80+Safari%2F537.36%7CMacIntel%7Cen-US%26pm_fpsc%3D24%7C1440%7C900%7C900%26pm_fpsw%3D%26pm_fptz%3D2%26pm_fpln%3Dlang%3Den-US%7Csyslang%3D%7Cuserlang%3D%26pm_fpjv%3D0%26pm_fpco%3D1"
-
+function loginPostRequest (username, password, cookies)
   local url = CONSTANTS.login
-  local devicePrint = defaultDevicePrint
-  local content = "ssn=" .. username .. "&userid=" .. username .. "&SavedIdInd=N&DEVICE_PRINT=" .. devicePrint .. "&ssnt=*********&pin=" .. password .. "&login-btn=Log+In"
+  local content = "username=" .. username .. "&password=" .. password .. "&SavedIdInd=N"
   local contentType = "application/x-www-form-urlencoded; charset=UTF-8"
-  return url, content, contentType
+
+  -- Extracting the _abck
+  --local abckCookie = cookies:match('(_abck=.*);?')
+  --local generatedCookie = "JSESSIONID=" .. randomJsessionId() .. "; " .. abckCookie .. "; "
+
+  local abckCookie = "_abck=AE221C6450B51346A295098A0AB85D16~0~YAAQsgoWAq6B0vtuAQAAxHY3BgONSS+2jGke2RQ8C8fnWj5jOpCc4ZiWmIPTt0yAWTIdKFmmP/8SE+VD0rslSs6AHsuD90DlR3BWF8dqF7Y9fQftomqm21Dgqv1vI2WUYRXHVUb4yFVWCDNaFZn7qIwq9rJIxFk4ishGyivzIX1xXJVYMMWhSZ5SktvubQPuiU2U5OJT15H8gyqhrkiLHDNDRX+/ihCbEZGPy2nwERucaI5xvAIZIAbiMhsvBjAjhyjfAEa9UdYrVH31FmhbqTHUk4EB9FmYFBMw6l7r0Ga+dzXJHESK1SQLC2+x5bK6dqZ4cWAz/mCO~-1~-1~-1; "
+  local cookie = "JSESSIONID=" .. randomJsessionId() .. "; " .. abckCookie
+  local headers = {
+    Cookie = cookie
+  }
+
+  return url, content, contentType, headers
 end
 
 function extractBalance (jsonString)
@@ -117,12 +125,12 @@ function formatEuropeanCurrencyValueAsFloat (string)
   local formatString = "%d*%.*%d+,%d+"
 
   -- Uncomment to debug formatting
-  -- print (string.format("Formatting currency string %s as float", string))
+  -- print(string.format("Formatting currency string %s as float", string))
 
   local formattedString = string:match(formatString):gsub("%.", ""):gsub(",", ".")
 
   -- Uncomment to debug formatting
-  -- print (string.format("Result: %s", formattedString))
+  -- print(string.format("Result: %s", formattedString))
 
   return formattedString
 end
@@ -135,7 +143,7 @@ function removeCommaThousandsDelimiter (string)
 end
 
 -- Helper function to format a string in Title Case
-function titlecase(str)
+function titlecase (str)
   local buf = {}
   local inWord = false
   for i = 1, #str do
@@ -151,4 +159,23 @@ function titlecase(str)
     end
   end
   return table.concat(buf)
+end
+
+function randomJsessionId ()
+  local chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  local length = 32
+  local randomString = ''
+
+  math.randomseed(os.time())
+
+  charTable = {}
+  for c in chars:gmatch"." do
+      table.insert(charTable, c)
+  end
+
+  for i = 1, length do
+      randomString = randomString .. charTable[math.random(1, #charTable)]
+  end
+
+  return randomString
 end
