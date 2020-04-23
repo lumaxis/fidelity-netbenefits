@@ -98,31 +98,40 @@ end
 
 function extractSecurities (jsonString)
   local currency = jsonString:match('"altCurrencyCode":"(%a+)"')
-  local exchangeRate = jsonString:match('"altCurrencyValue":"(.-)"')
+  local originalCurrency = jsonString:match('"recordkeptCurrencyCode":"(%a+)"')
+  local exchangeRate = jsonString:match('"balancesView":.-"altCurrencyValue":"(.-)"')
+  -- print (string.format("Exchange rate: %s", exchangeRate))
 
   local securityJsonsIterator = jsonString:gmatch('.-{("secDesc".-"unrealizedGainLoss".-)}.-')
+  -- print(string.format("Security JSON Object: %s", securityJsonsIterator))
 
   -- Iterate over all found string matches and build securites from it
   local securities = {}
   for securityJson in securityJsonsIterator do
+    -- print (string.format("Security JSON: %s", securityJson))
     local security = {}
     security.exchangeRate = exchangeRate
 
     security.name = titlecase(securityJson:match('"secDesc":"(.-)"'))
     security.quantity = removeCommaThousandsDelimiter(securityJson:match('"quantity":"(.-)"'))
-    security.amount = formatEuropeanCurrencyValueAsFloat(securityJson:match('"closingMktValueAltCurr":"(.-)"'))
-    security.originalCurrencyAmmount = securityJson:match('"closingMktValue":"(.-)"')
-    security.price = formatEuropeanCurrencyValueAsFloat(securityJson:match('"closingPriceAltCurrency":"(.-)"'))
-
-    totalCostBasisAltCurr = securityJson:match('"totalCostBasisAltCurr":"(.-)"')
-    if (totalCostBasisAltCurr ~= "0.00") then
-      security.purchasePrice = formatEuropeanCurrencyValueAsFloat(totalCostBasisAltCurr) / security.quantity
+    security.amount = convertUsdToAltCurrency(securityJson:match('"closingMktValue":"(.-)"'), exchangeRate)
+    security.originalCurrencyAmount = removeCommaThousandsDelimiter(securityJson:match('"closingMktValue":"(.-)"'))
+    security.currencyOfOriginalAmount = originalCurrency
+    security.price = convertUsdToAltCurrency(securityJson:match('"closingPrice":"(.-)"'), exchangeRate)
+    
+    local totalCostBasis = securityJson:match('"totalCostBasis":"(.-)"')
+    if (totalCostBasis) then
+      security.purchasePrice = convertUsdToAltCurrency(totalCostBasis, exchangeRate) / security.quantity
     end
 
     table.insert(securities, security)
   end
 
   return securities
+end
+
+function convertUsdToAltCurrency (usdString, exchangeRate)
+  return removeCommaThousandsDelimiter(usdString) * exchangeRate
 end
 
 -- Format "numbers" in the form of "€ 1.337,42 EUR" as 1337.42
