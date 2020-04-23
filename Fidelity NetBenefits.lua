@@ -24,7 +24,12 @@ function InitializeSession (protocol, bankCode, username, username2, password, u
   local html = HTML(connection:get(url))
 
   local url, postContent, postContentType, headers = loginPostRequest(username, password, connection:getCookies())
-  connection:request("POST", url, postContent, postContentType, headers)
+  content = connection:request("POST", url, postContent, postContentType, headers)
+
+  if (string.find(content, "We are Sorry.  There was a Technical Issue.")) then
+    return "Fidelity is having technical issues or is throttling your logins. Please try again later"
+  end
+
   g_cookies = connection:getCookies()
 end
 
