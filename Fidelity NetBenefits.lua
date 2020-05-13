@@ -44,6 +44,10 @@ function ListAccounts (knownAccounts)
   local stockPlanAccountLink = html:xpath('//*[@id="espp-tables"]/div[contains(@class, \'full-transaction-history\')]/a'):attr("href")
   local number = stockPlanAccountLink:match(".+ACCOUNT=(%w+)_MSFT.*")
 
+  if (number == nil or number == '') then
+    return "We could not find any Fidelity accounts. Make sure you have active positions in your account."
+  end
+
   local subAccount = html:xpath('//*[@id="tile3"]/div[2]'):text():match(".*(%a%d+)$")
 
   local account = {
@@ -58,6 +62,10 @@ function ListAccounts (knownAccounts)
 end
 
 function RefreshAccount (account, since)
+  if (account.accountNumber == nil or account.accountNumber == '') then
+    return "Could not refresh account because we could not find a valid account number."
+  end
+
   local connection = Connection()
   local html = HTML(connection:request("GET", CONSTANTS.overview .. account.accountNumber, nil, nil, {["Cookie"] = g_cookies} ))
 
