@@ -41,7 +41,7 @@ function ListAccounts (knownAccounts)
   -- Account Details
   local accoutName = html:xpath('//*[@id="tile3"]/h2'):text()
   
-  local stockPlanAccountLink = html:xpath('//*[@id="espp-tables"]/div[contains(@class, \'full-transaction-history\')]/a'):attr("href")
+  local stockPlanAccountLink = html:xpath('//*[@id="espp-tables"]/div[contains(@class, \'full-transaction-history\')]//a'):attr("href")
   local number = stockPlanAccountLink:match(".+ACCOUNT=(%w+)_MSFT.*")
 
   if (number == nil or number == '') then
