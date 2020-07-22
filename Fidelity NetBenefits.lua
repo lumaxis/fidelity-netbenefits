@@ -1,5 +1,5 @@
 WebBanking{
-  version     = 0.05,
+  version     = 0.06,
   url         = "https://nb.fidelity.com/public/nb/worldwide/home?AuthRedUrl=https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary",
   services    = {"Fidelity NetBenefits"},
   description = "Get securities and their current value from the Fidelity NetBenefits website"
@@ -8,7 +8,7 @@ WebBanking{
 CONSTANTS = {
   homepage = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary",
   login = "https://login.fidelity.com/ftgw/Fas/Fidelity/PWI/Login/Response/dj.chf.ra/",
-  logout = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary/Catalina/LongBeach?Command=LOGOUT&amp;Realm=mybenefitsww",
+  logout = "https://netbenefitsww.fidelity.com/Catalina/LongBeach?Command=LOGOUT&Realm=mybenefitsww",
   overview = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PositionSummary?ACCOUNT="
 }
 
@@ -40,7 +40,7 @@ function ListAccounts (knownAccounts)
 
   -- Account Details
   local accoutName = html:xpath('//*[@id="tile3"]/h2'):text()
-  
+
   local stockPlanAccountLink = html:xpath('//*[@id="espp-tables"]/div[contains(@class, \'full-transaction-history\')]//a'):attr("href")
   local number = stockPlanAccountLink:match(".+ACCOUNT=(%w+)_MSFT.*")
 
@@ -76,7 +76,7 @@ end
 
 function EndSession ()
   local connection = Connection()
-  local html = HTML(connection:get(CONSTANTS.logout))
+  local html = HTML(connection:request("GET", CONSTANTS.logout, nil, nil, {["Cookie"] = g_cookies}))
   g_cookies = ""
 end
 
@@ -126,7 +126,7 @@ function extractSecurities (jsonString)
     security.originalCurrencyAmount = removeCommaThousandsDelimiter(securityJson:match('"closingMktValue":"(.-)"'))
     security.currencyOfOriginalAmount = originalCurrency
     security.price = convertUsdToAltCurrency(securityJson:match('"closingPrice":"(.-)"'), exchangeRate)
-    
+
     local totalCostBasis = securityJson:match('"totalCostBasis":"(.-)"')
     if (totalCostBasis) then
       security.purchasePrice = convertUsdToAltCurrency(totalCostBasis, exchangeRate) / security.quantity
