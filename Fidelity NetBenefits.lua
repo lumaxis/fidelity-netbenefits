@@ -1,5 +1,5 @@
 WebBanking{
-  version     = 0.07,
+  version     = 0.08,
   url         = "https://nb.fidelity.com/public/nb/worldwide/home?AuthRedUrl=https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary",
   services    = {"Fidelity NetBenefits"},
   description = "Get securities and their current value from the Fidelity NetBenefits website"
@@ -90,7 +90,7 @@ function loginPostRequest (username, password, cookies)
   --local abckCookie = cookies:match('(_abck=.*);?')
   --local generatedCookie = "JSESSIONID=" .. randomJsessionId() .. "; " .. abckCookie .. "; "
 
-  local abckCookie = "_abck=E27681FFDE9FEFDE9AC5BAB74E9D6E42~-1~YAAQFYQUAoMyz1N2AQAA6Lp0ZwXK7dzdNEV1x7hYjEoP8oTJzkAoliIpotvbLgRP4vBDqdfLIBDeaEmaHvForMX0XPg9DBi6hAxo9f3EJxITxnFijt6VUzpWMPjRKrTGi9sraPeNYEGVRuGWa2/bRETeuqNhbd+Xv1WQrA4AhVbQii2YXtYX0FnGcFcRHV7Q0Mv5F0nozmG3l6IeMTX+p3yaTD8VTIYEv/l+Rd//Wz8qJmN1MluJKYid1Sb7azZOdk5lYXTrUVgCW8DcQW8MAzyzUDNWrXYcjiiyhLIs/INxMqaVwgaMEKP3LCd7KHdadeTDwSbQS64dveV2AWG5HJXjM3u4doqY~0~-1~-1;"
+  local abckCookie = "_abck=7EDB38AE77253EA138A936348CDBB154~0~YAAQ0aDVFyI+ZT52AQAA8mR7awWtkIUeUbazwZDBytrsMNteVBDidn06kRr9lptA64S/qNOVSzRCmgLZ+njgBP1sTcaqhGlP0ft1CH2wGpvWpng6DgWIfBVwTj+5+CeSzgRv9r+eiOTXHm+IrI1TwYdiR3yRfFJHgy0r6HWLthAf7E6xapGd2cGpSS1Ia4pv4m4oGg0JGMwqddozECV2gYf2m9+O5tOxaMjaPiU38qwVYVijLM/gUznyZTrR2OpCNoEfpwpzecMrQsGuE0JDZsm88q4aXJWsbaM3uly+U+JwoLNjly1F1RlUT0XSqs2/MFQvqB6OvIaS~-1~-1~-1; "
   local cookie = "JSESSIONID=" .. randomJsessionId() .. "; " .. abckCookie
   local headers = {
     Cookie = cookie
