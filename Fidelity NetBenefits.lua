@@ -42,7 +42,7 @@ function ListAccounts (knownAccounts)
   local accoutName = html:xpath('//*[@id="tile3"]/h2'):text()
 
   local stockPlanAccountLink = html:xpath('//*[@id="espp-tables"]/div[contains(@class, \'full-transaction-history\')]//a'):attr("href")
-  local number = stockPlanAccountLink:match(".+ACCOUNT=(%w+)_MSFT.*")
+  local number = stockPlanAccountLink:match("?ACCOUNT=(%w+)_.*")
 
   if (number == nil or number == '') then
     return "We could not find any Fidelity accounts. Make sure you have active positions in your account."
