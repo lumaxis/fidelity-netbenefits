@@ -90,7 +90,7 @@ function loginPostRequest (username, password, cookies)
   --local abckCookie = cookies:match('(_abck=.*);?')
   --local generatedCookie = "JSESSIONID=" .. randomJsessionId() .. "; " .. abckCookie .. "; "
 
-  local abckCookie = "_abck=7EDB38AE77253EA138A936348CDBB154~0~YAAQ0aDVFyI+ZT52AQAA8mR7awWtkIUeUbazwZDBytrsMNteVBDidn06kRr9lptA64S/qNOVSzRCmgLZ+njgBP1sTcaqhGlP0ft1CH2wGpvWpng6DgWIfBVwTj+5+CeSzgRv9r+eiOTXHm+IrI1TwYdiR3yRfFJHgy0r6HWLthAf7E6xapGd2cGpSS1Ia4pv4m4oGg0JGMwqddozECV2gYf2m9+O5tOxaMjaPiU38qwVYVijLM/gUznyZTrR2OpCNoEfpwpzecMrQsGuE0JDZsm88q4aXJWsbaM3uly+U+JwoLNjly1F1RlUT0XSqs2/MFQvqB6OvIaS~-1~-1~-1; "
+  local abckCookie = "_abck=B0C2C284ED0000FBD02EC595F6E7BEDE~0~YAAQbplkX7sqg+19AQAA/mss8gfv0+1yssAIYX4JeFH09Cm/z4nwujGbqNFquNW5PeFKzcOspQqK6GqjT17SSS/N3Gul3L5E3sl20Jexeh6nEhUzoD2nmCwCceHCBRaE+TfZ9N53lCQh3f5GBzn2g5wKVjQWb8JIke0MFKtmbv5S9WrSQcMLBBQSvNcz3tdIDYxoNMT5aKEHYHQZI6zKJQajihZzKIW1Fw4R5Bs/pqoIYXWRZgMQu1AqfQSaEZwVwvn6M55buPglQu5CTGFCJgSE9qgoSNO365SgIFWnkGmBzJOEXm/XoxZBQt0bjUjLn91nmtCikgOY5AQS7Xj5tFol9o4yiEMCSljpVE/FYKBIT7lupiCN65WXRbPu/UXgLuOLClTF20MGGt884byal4dJvIxY0M8jo+Ya~-1~-1~-1; "
   local cookie = "JSESSIONID=" .. randomJsessionId() .. "; " .. abckCookie
   local headers = {
     Cookie = cookie
