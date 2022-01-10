@@ -9,8 +9,8 @@ _ℹ️ This extension makes several assumptions about the format of numbers on 
 
 ## Installation
 
-1. Only the [MoneyMoney beta version]() can run custom extensions.
 2. Download [fidelity-nb.lua](https://github.com/lumaxis/fidelity-nb/archive/master.zip)
+1. Only the [MoneyMoney beta version](https://moneymoney-app.com/beta/) can run custom extensions.
 3. Copy the `fidelity-nb.lua` file to the MoneyMoney Extensions folder. This can most easily be found by letting the app itself open its `Database` folder. `Extensions` is a peer of that folder.
     <img width="365" alt="screenshot 2018-04-17 16 43 22" src="https://user-images.githubusercontent.com/406937/38877388-e4e99e80-425e-11e8-8dfc-cf484a19a707.png">
 4. Make sure "Verify digital signatures of extensions" is disabled in your MoneyMoney app preferences:  
