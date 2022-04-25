@@ -100,14 +100,14 @@ function loginPostRequest (username, password, cookies)
 end
 
 function extractBalance (jsonString)
-  local balance = jsonString:match('.*"fullNetWorthAltCurrency"%s*:%s*"(.-)".*')
+  local balance = jsonString:match('.*"totalClosingMktValAltCurr"%s*:%s*"(.-)".*')
   return formatEuropeanCurrencyValueAsFloat(balance)
 end
 
 function extractSecurities (jsonString)
   local currency = jsonString:match('"altCurrencyCode":"(%a+)"')
   local originalCurrency = jsonString:match('"recordkeptCurrencyCode":"(%a+)"')
-  local exchangeRate = jsonString:match('"balancesView":.-"altCurrencyValue":"(.-)"')
+  local exchangeRate = jsonString:match('"positionsView":.-"altCurrencyValue":"(.-)"')
   -- print (string.format("Exchange rate: %s", exchangeRate))
 
   local securityJsonsIterator = jsonString:gmatch('.-{("secDesc".-"unrealizedGainLoss".-)}.-')
