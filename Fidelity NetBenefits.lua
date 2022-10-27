@@ -9,7 +9,8 @@ CONSTANTS = {
   homepage = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary",
   login = "https://login.fidelity.com/ftgw/Fas/Fidelity/PWI/Login/Response/dj.chf.ra/",
   logout = "https://netbenefitsww.fidelity.com/Catalina/LongBeach?Command=LOGOUT&Realm=mybenefitsww",
-  overview = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PositionSummary?ACCOUNT="
+  overview = "https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PositionSummary?ACCOUNT=",
+  position = "https://netbenefitsww.fidelity.com/mybenefitsww/spsaccounts/api/position?ACCOUNT="
 }
 
 g_cookies = ""
@@ -66,12 +67,14 @@ function RefreshAccount (account, since)
     return "Could not refresh account because we could not find a valid account number."
   end
 
+  local headers = {
+    ["Cookie"] = g_cookies,
+    ["Accept"] = "application/json"
+  }
   local connection = Connection()
-  local html = HTML(connection:request("GET", CONSTANTS.overview .. account.accountNumber, nil, nil, {["Cookie"] = g_cookies} ))
+  local json = JSON(connection:request("GET", CONSTANTS.position .. account.accountNumber, nil, nil, headers )):dictionary()
 
-  local jsonString = html:xpath('/html/head/script[1]'):text()
-
-  return {balance=extractBalance(jsonString), securities=extractSecurities(jsonString)}
+  return {balance=extractBalance(json), securities=extractSecurities(json)}
 end
 
 function EndSession ()
@@ -99,69 +102,38 @@ function loginPostRequest (username, password, cookies)
   return url, content, contentType, headers
 end
 
-function extractBalance (jsonString)
-  local balance = jsonString:match('.*"totalClosingMktValAltCurr"%s*:%s*"(.-)".*')
-  return formatEuropeanCurrencyValueAsFloat(balance)
+function extractBalance (json)
+  local balance = json.accountDetails.displayAccountsBalance.totalClosingMktVal.value
+  return balance
 end
 
-function extractSecurities (jsonString)
-  local currency = jsonString:match('"altCurrencyCode":"(%a+)"')
-  local originalCurrency = jsonString:match('"recordkeptCurrencyCode":"(%a+)"')
-  local exchangeRate = jsonString:match('"positionsView":.-"altCurrencyValue":"(.-)"')
+function extractSecurities (json)
+  local currency = json.exchangeRate.toCurrency
+  local originalCurrency = json.exchangeRatefromCurrency
+  local exchangeRate = json.exchangeRate.rate
   -- print (string.format("Exchange rate: %s", exchangeRate))
 
-  local securityJsonsIterator = jsonString:gmatch('.-{("secDesc".-"unrealizedGainLoss".-)}.-')
-  -- print(string.format("Security JSON Object: %s", securityJsonsIterator))
-
-  -- Iterate over all found string matches and build securites from it
   local securities = {}
-  for securityJson in securityJsonsIterator do
-    -- print (string.format("Security JSON: %s", securityJson))
+  for i, v in pairs(json.position) do
     local security = {}
     security.exchangeRate = exchangeRate
 
-    security.name = titlecase(securityJson:match('"secDesc":"(.-)"'))
-    security.quantity = removeCommaThousandsDelimiter(securityJson:match('"quantity":"(.-)"'))
-    security.amount = convertUsdToAltCurrency(securityJson:match('"closingMktValue":"(.-)"'), exchangeRate)
-    security.originalCurrencyAmount = removeCommaThousandsDelimiter(securityJson:match('"closingMktValue":"(.-)"'))
+    security.name = v.secDesc
+    security.quantity = v.quantity
+    security.amount = v.displayPositionBalance.closingMktValue.value
+    security.originalCurrencyAmount = v.assetPositionBalance.closingMktValue.value
     security.currencyOfOriginalAmount = originalCurrency
-    security.price = convertUsdToAltCurrency(securityJson:match('"closingPrice":"(.-)"'), exchangeRate)
+    security.price = v.displayPositionBalance.closingPrice.value
 
-    local totalCostBasis = securityJson:match('"totalCostBasis":"(.-)"')
+    local totalCostBasis = v.displayPositionBalance.totalCostBasis.value
     if (totalCostBasis) then
-      security.purchasePrice = convertUsdToAltCurrency(totalCostBasis, exchangeRate) / security.quantity
+      security.purchasePrice = totalCostBasis / security.quantity
     end
 
     table.insert(securities, security)
   end
 
   return securities
-end
-
-function convertUsdToAltCurrency (usdString, exchangeRate)
-  return removeCommaThousandsDelimiter(usdString) * exchangeRate
-end
-
--- Format "numbers" in the form of "€ 1.337,42 EUR" as 1337.42
-function formatEuropeanCurrencyValueAsFloat (string)
-  local formatString = "%d*%.*%d+,%d+"
-
-  -- Uncomment to debug formatting
-  -- print(string.format("Formatting currency string %s as float", string))
-
-  local formattedString = string:match(formatString):gsub("%.", ""):gsub(",", ".")
-
-  -- Uncomment to debug formatting
-  -- print(string.format("Result: %s", formattedString))
-
-  return formattedString
-end
-
--- Format "numbers" in the form of "1,337.42" as 1337.42
-function removeCommaThousandsDelimiter (string)
-  local formatString = "%d*,*%d+%.%d+"
-
-  return string:match(formatString):gsub(",", "")
 end
 
 -- Helper function to format a string in Title Case
