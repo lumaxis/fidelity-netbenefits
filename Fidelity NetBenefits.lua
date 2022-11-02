@@ -119,7 +119,7 @@ function extractSecurities (json)
     security.exchangeRate = exchangeRate
 
     security.name = v.secDesc
-    security.quantity = v.quantity
+    security.quantity = removeCommaThousandsDelimiter(v.quantity)
     security.amount = v.displayPositionBalance.closingMktValue.value
     security.originalCurrencyAmount = v.assetPositionBalance.closingMktValue.value
     security.currencyOfOriginalAmount = originalCurrency
@@ -134,6 +134,13 @@ function extractSecurities (json)
   end
 
   return securities
+end
+
+-- Format "numbers" in the form of "1,337.42" as 1337.42
+function removeCommaThousandsDelimiter (string)
+  local formatString = "%d*,*%d+%.%d+"
+
+  return string:match(formatString):gsub(",", "")
 end
 
 -- Helper function to format a string in Title Case
