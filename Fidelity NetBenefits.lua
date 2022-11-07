@@ -1,5 +1,5 @@
 WebBanking{
-  version     = 0.10,
+  version     = 0.11,
   url         = "https://nb.fidelity.com/public/nb/worldwide/home?AuthRedUrl=https://netbenefitsww.fidelity.com/mybenefitsww/stockplans/navigation/PlanSummary",
   services    = {"Fidelity NetBenefits"},
   description = "Get securities and their current value from the Fidelity NetBenefits website"
