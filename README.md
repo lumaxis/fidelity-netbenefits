@@ -1,6 +1,8 @@
 # fidelity-netbenefits
 A MoneyMoney extension for Fidelity NetBenefits stock plan accounts
 
+**Note ⚠️:** _Due to recent changes in the Fidelity NetBenefits login process, this extension does not currently work!_
+
 ## Prerequesites
 _ℹ️ This extension makes several assumptions about the format of numbers on the Fidelity NetBenefits website and so far has only been tested with non-US accounts. Make sure your "display currency" is set to a sane currency that uses commas as the decimial separators and dots as thousands separators._
 
